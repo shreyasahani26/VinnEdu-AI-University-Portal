@@ -13,9 +13,8 @@ from flask import (
     flash,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
-from mysql.connector import Error
 
-from database import get_connection, initialize_database
+from database import Error, USE_POSTGRES, get_connection, initialize_database
 from agents import AGENTS, answer_query
 
 
@@ -36,7 +35,7 @@ app.secret_key = os.getenv(
 
 def query_all(sql, params=()):
     connection = get_connection()
-    cursor = connection.cursor(dictionary=True)
+    cursor = connection.cursor() if USE_POSTGRES else connection.cursor(dictionary=True)
 
     try:
         cursor.execute(sql, params)
@@ -48,7 +47,7 @@ def query_all(sql, params=()):
 
 def query_one(sql, params=()):
     connection = get_connection()
-    cursor = connection.cursor(dictionary=True)
+    cursor = connection.cursor() if USE_POSTGRES else connection.cursor(dictionary=True)
 
     try:
         cursor.execute(sql, params)
@@ -63,8 +62,13 @@ def execute_query(sql, params=()):
     cursor = connection.cursor()
 
     try:
+        if USE_POSTGRES and sql.lstrip().upper().startswith("INSERT"):
+            sql = f"{sql.rstrip().rstrip(';')} RETURNING id"
         cursor.execute(sql, params)
         connection.commit()
+        if USE_POSTGRES:
+            row = cursor.fetchone()
+            return row["id"] if row else None
         return cursor.lastrowid
     except Exception:
         connection.rollback()
@@ -405,8 +409,16 @@ def timetable():
         """
         SELECT branch, section, course, faculty, room, day_name, start_time, end_time
         FROM timetable
-        ORDER BY FIELD(LOWER(day_name), 'monday', 'tuesday', 'wednesday',
-                       'thursday', 'friday', 'saturday', 'sunday'), start_time
+        ORDER BY CASE LOWER(day_name)
+            WHEN 'monday' THEN 1
+            WHEN 'tuesday' THEN 2
+            WHEN 'wednesday' THEN 3
+            WHEN 'thursday' THEN 4
+            WHEN 'friday' THEN 5
+            WHEN 'saturday' THEN 6
+            WHEN 'sunday' THEN 7
+            ELSE 8
+        END, start_time
         """
     )
     return render_template(
@@ -475,10 +487,10 @@ def attendance():
     summary = query_all(
         f"""
         SELECT student_name, course,
-               SUM(status = 'Present') AS present_count,
-               SUM(status = 'Late') AS late_count,
+             SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present_count,
+             SUM(CASE WHEN status = 'Late' THEN 1 ELSE 0 END) AS late_count,
                COUNT(*) AS total_count,
-               ROUND(100 * SUM(status = 'Present') / COUNT(*), 2) AS attendance_pct
+             ROUND(100.0 * SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) / COUNT(*), 2) AS attendance_pct
         FROM attendance{filter_sql}
         GROUP BY student_name, course
         ORDER BY student_name, course
@@ -594,17 +606,25 @@ def agent_feedback():
             flash("That AI agent query was not found.", "error")
             return redirect(url_for("agents_page"))
 
-        execute_query(
+        if USE_POSTGRES:
+            feedback_sql = """
+                INSERT INTO agent_feedback
+                    (log_id, user_id, rating, feedback_text)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (log_id, user_id) DO UPDATE
+                SET rating = EXCLUDED.rating,
+                    feedback_text = EXCLUDED.feedback_text
             """
-            INSERT INTO agent_feedback
-                (log_id, user_id, rating, feedback_text)
-            VALUES (%s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                rating = VALUES(rating),
-                feedback_text = VALUES(feedback_text)
-            """,
-            (log_id, user["id"], rating, feedback_text)
-        )
+        else:
+            feedback_sql = """
+                INSERT INTO agent_feedback
+                    (log_id, user_id, rating, feedback_text)
+                VALUES (%s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    rating = VALUES(rating),
+                    feedback_text = VALUES(feedback_text)
+            """
+        execute_query(feedback_sql, (log_id, user["id"], rating, feedback_text))
 
         flash("Thank you! Your feedback has been saved.", "success")
 

@@ -1,6 +1,6 @@
 # VinnEdu AI — Enhanced University Portal
 
-A Flask + MySQL prototype for a university portal with role-based login, dashboard, branch/section-aware timetable, attendance summaries and an 11-agent directory.
+A Flask university portal with role-based login, dashboard, branch/section-aware timetable, attendance summaries and an 11-agent directory. Local development uses MySQL; Render uses PostgreSQL.
 
 ## 1. Requirements
 - Python 3.10–3.13 recommended
@@ -9,7 +9,7 @@ A Flask + MySQL prototype for a university portal with role-based login, dashboa
 
 ## 2. Configure MySQL
 1. Open MySQL Workbench and connect to your local MySQL Server.
-2. Open `schema.sql` and run it (lightning icon). This creates `vinnedu_ai`.
+2. Open `schema.sql` and run it (lightning icon). This creates `vinnedu_ai` for local development.
 3. Copy `.env.example` to `.env` in this project folder.
 4. Set `MYSQL_USER` and `MYSQL_PASSWORD` to a MySQL account that can use the database.
 5. If your MySQL host, port, or database name differs, update the matching `MYSQL_*` values.
@@ -39,11 +39,11 @@ If PowerShell blocks activation, use:
 ## 4. Deploy on Render
 Live service: https://vinnedu-ai-university-portal.onrender.com
 
-1. Push this repository to GitHub and create a Render Blueprint using `render.yaml`.
-2. Provide `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_DATABASE` in Render's environment settings. Use a hosted MySQL service reachable from Render; do not put credentials in this repository.
+1. Sync the existing Render service with the `render.yaml` Blueprint on the `main` branch.
+2. The Blueprint links the web service to a private Render Postgres database using `DATABASE_URL`; no database password needs to be copied into chat or committed to GitHub.
 3. Render builds with `pip install -r requirements.txt`, starts `gunicorn wsgi:app`, and checks `/health`.
 
-The configured MySQL database must already exist. The WSGI startup initializes or migrates the application tables. Ensure the database provider permits connections from the Render service.
+The Blueprint uses Render's free Postgres plan. Free Postgres expires 30 days after creation; it has a 14-day grace period to upgrade before Render deletes the database and its data. Do not store important data in this demo database. The WSGI startup initializes the application tables.
 
 ## 5. Demo accounts
 The app creates these accounts only when the `users` table is empty:
