@@ -4,13 +4,22 @@ import mysql.connector
 import psycopg
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
-from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 USE_POSTGRES = bool(DATABASE_URL)
 Error = psycopg.Error if USE_POSTGRES else mysql.connector.Error
+DEMO_USERS = (
+    ("Demo Student", "student@vinnedu.local", "Student@123", "student"),
+    ("Demo Teacher", "teacher@vinnedu.local", "Teacher@123", "teacher"),
+    ("Demo Admin", "admin@vinnedu.local", "Admin@123", "admin"),
+)
+
+
+def seed_demo_data_enabled():
+    return os.getenv("SEED_DEMO_DATA", "1").strip().lower() in {"1", "true", "yes"}
 
 DB_CONFIG = {
     "host": os.getenv("MYSQL_HOST", "localhost"),
@@ -331,12 +340,7 @@ def init_portal_tables():
         )
 
         cursor.execute("SELECT COUNT(*) FROM users")
-        if cursor.fetchone()[0] == 0:
-            demo_users = [
-                ("Demo Student", "student@vinnedu.local", "Student@123", "student"),
-                ("Demo Teacher", "teacher@vinnedu.local", "Teacher@123", "teacher"),
-                ("Demo Admin", "admin@vinnedu.local", "Admin@123", "admin"),
-            ]
+        if cursor.fetchone()[0] == 0 and seed_demo_data_enabled():
             cursor.executemany(
                 """
                 INSERT INTO users (full_name, email, password_hash, role)
@@ -344,7 +348,7 @@ def init_portal_tables():
                 """,
                 [
                     (name, email, generate_password_hash(password), role)
-                    for name, email, password, role in demo_users
+                    for name, email, password, role in DEMO_USERS
                 ],
             )
 
@@ -442,13 +446,30 @@ def _init_postgres_portal_tables():
                     ("ME101", "Engineering Mechanics", "Mechanical Engineering"),
                 ],
             )
-            cursor.execute("SELECT COUNT(*) AS total FROM users")
-            if cursor.fetchone()["total"] == 0:
-                demo_users = [
-                    ("Demo Student", "student@vinnedu.local", "Student@123", "student"),
-                    ("Demo Teacher", "teacher@vinnedu.local", "Teacher@123", "teacher"),
-                    ("Demo Admin", "admin@vinnedu.local", "Admin@123", "admin"),
-                ]
+            if seed_demo_data_enabled():
+                cursor.execute("SELECT COUNT(*) AS total FROM users")
+                seed_users = cursor.fetchone()["total"] == 0
+            else:
+                seed_users = False
+                for _, email, default_password, _ in DEMO_USERS:
+                    cursor.execute(
+                        "SELECT id, password_hash FROM users WHERE email = %s",
+                        (email,),
+                    )
+                    existing_user = cursor.fetchone()
+                    if (
+                        existing_user
+                        and existing_user["password_hash"]
+                        and check_password_hash(
+                            existing_user["password_hash"], default_password
+                        )
+                    ):
+                        cursor.execute(
+                            "DELETE FROM users WHERE id = %s",
+                            (existing_user["id"],),
+                        )
+
+            if seed_users:
                 cursor.executemany(
                     """
                     INSERT INTO users (full_name, email, password_hash, role)
@@ -456,7 +477,7 @@ def _init_postgres_portal_tables():
                     """,
                     [
                         (name, email, generate_password_hash(password), role)
-                        for name, email, password, role in demo_users
+                        for name, email, password, role in DEMO_USERS
                     ],
                 )
             cursor.execute("SELECT COUNT(*) AS total FROM notifications")

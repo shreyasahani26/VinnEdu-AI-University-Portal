@@ -16,6 +16,8 @@ services:
         generateValue: true
       - key: FLASK_DEBUG
         value: "0"
+      - key: SEED_DEMO_DATA
+        value: "0"
 
 databases:
   - name: vinnedu-db

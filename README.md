@@ -15,7 +15,7 @@ A Flask university portal with role-based login, dashboard, branch/section-aware
 5. If your MySQL host, port, or database name differs, update the matching `MYSQL_*` values.
 6. Set `FLASK_SECRET_KEY` to a long random value before deployment.
 
-The application creates its tables and sample courses on startup. It creates the demo accounts only when the `users` table is empty.
+The application creates its tables and sample courses on startup. Local MySQL seeds demo accounts only when the `users` table is empty; Render disables demo accounts to avoid public default credentials.
 
 ## 3. Install and run (VS Code PowerShell)
 Open the terminal inside the `VinnEdu-AI-Enhanced` folder, then run:
