@@ -37,6 +37,8 @@ If PowerShell blocks activation, use:
 ```
 
 ## 4. Deploy on Render
+Live service: https://vinnedu-ai-university-portal.onrender.com
+
 1. Push this repository to GitHub and create a Render Blueprint using `render.yaml`.
 2. Provide `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_DATABASE` in Render's environment settings. Use a hosted MySQL service reachable from Render; do not put credentials in this repository.
 3. Render builds with `pip install -r requirements.txt`, starts `gunicorn wsgi:app`, and checks `/health`.
