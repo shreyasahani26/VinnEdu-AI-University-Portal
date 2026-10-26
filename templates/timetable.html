@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Smart Timetable · VinnEdu AI{% endblock %}
+{% block content %}
+<h1>Smart Timetable</h1>
+<div class="card">
+<h2>Add timetable entry</h2>
+{% if current_user.role|lower in ['teacher','faculty','admin'] %}
+<form method="post">
+<div class="form-grid">
+<div><label>Branch</label><select name="branch" required>{% for b in branches %}<option>{{ b }}</option>{% endfor %}<option>Other</option></select></div>
+<div><label>Section</label><select name="section" required>{% for s in ['A','B','C','D','E'] %}<option>{{ s }}</option>{% endfor %}</select></div>
+<div><label>Course</label><select name="course" required>{% for c in courses %}<option value="{{ c.title }}">{{ c.code }} — {{ c.title }}</option>{% endfor %}</select></div>
+<div><label>Faculty</label><input name="faculty" required placeholder="Faculty name"></div>
+<div><label>Room / Lab</label><input name="room" required placeholder="Room-201"></div>
+<div><label>Day</label><select name="day_name">{% for d in days %}<option>{{ d }}</option>{% endfor %}</select></div>
+<div><label>Start time</label><input type="time" name="start_time" required></div>
+<div><label>End time</label><input type="time" name="end_time" required></div>
+</div><p><button type="submit">Add class</button></p>
+</form>
+{% else %}<p class="muted">You are in student mode. Ask a teacher or admin to add timetable entries.</p>{% endif %}
+</div>
+<div class="card"><h2>All classes</h2><div class="table-wrap"><table>
+<thead><tr><th>Branch</th><th>Section</th><th>Course</th><th>Faculty</th><th>Room</th><th>Day</th><th>Time</th></tr></thead>
+<tbody>{% for e in entries %}<tr><td>{{ e.branch }}</td><td>{{ e.section }}</td><td>{{ e.course }}</td><td>{{ e.faculty }}</td><td>{{ e.room }}</td><td>{{ e.day_name }}</td><td>{{ e.start_time }}–{{ e.end_time }}</td></tr>{% else %}<tr><td colspan="7">No timetable entries yet.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

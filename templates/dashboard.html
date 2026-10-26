@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · VinnEdu AI{% endblock %}
+{% block content %}
+<h1>Welcome, {{ current_user.name }} <span class="muted">({{ current_user.role }})</span></h1>
+<div class="grid">
+  <div class="stat"><strong>{{ stats.students }}</strong>Students</div>
+  <div class="stat"><strong>{{ stats.teachers }}</strong>Teachers</div>
+  <div class="stat"><strong>{{ stats.courses }}</strong>Courses</div>
+</div>
+<div class="card"><h2>Notifications</h2>
+{% if notifications %}
+{% for n in notifications %}<p><b>{{ n.title }}</b><br>{{ n.message }} <span class="muted">· {{ n.created_at }}</span></p>{% endfor %}
+{% else %}<p class="muted">No notifications yet.</p>{% endif %}
+</div>
+<div class="grid">
+  <a class="card" href="{{ url_for('timetable') }}"><h2>Smart Timetable →</h2><p>View schedules and add classes (teacher/admin).</p></a>
+  <a class="card" href="{{ url_for('attendance') }}"><h2>Attendance →</h2><p>View attendance summary and recent records.</p></a>
+  <a class="card" href="{{ url_for('agents') }}"><h2>AI Agents →</h2><p>Ask a question and see which agent handles it.</p></a>
+</div>
+{% endblock %}

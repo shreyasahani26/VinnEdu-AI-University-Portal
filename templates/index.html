@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}VinnEdu AI — University Portal{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="muted">EDUCATION OPERATING SYSTEM</p>
+  <h1>VinnEdu AI — Smarter University Operations</h1>
+  <p>Manage timetable scheduling, attendance, branch and section data, and a directory of 11 specialized AI-agent concepts in one portal.</p>
+  <p><a class="btn" href="{{ url_for('signup') }}">Create account</a> <a class="btn secondary" href="{{ url_for('login') }}">Log in</a></p>
+</section>
+<div class="grid">
+  <div class="card"><h2>Smart Timetable</h2><p>Branch-aware schedule entries with room and faculty conflict checks.</p></div>
+  <div class="card"><h2>Attendance</h2><p>Record Present, Absent or Late and review percentage summaries.</p></div>
+  <div class="card"><h2>AI Agent Directory</h2><p>Explore 11 university-support agent concepts and simple request routing.</p></div>
+</div>
+{% endblock %}

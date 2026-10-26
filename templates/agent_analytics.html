@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Agent Analytics · VinnEdu AI{% endblock %}
+{% block content %}
+<h1>Agent Analytics</h1>
+<div class="grid">
+  <div class="stat"><strong>{{ totals.total_queries or 0 }}</strong>Total queries</div>
+  <div class="stat"><strong>{{ totals.unique_users or 0 }}</strong>Unique users</div>
+  <div class="stat"><strong>{{ '%.1f'|format(totals.average_score or 0) }}%</strong>Average match score</div>
+</div>
+<section class="card">
+  <h2>Queries by agent</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Agent</th><th>Queries</th><th>Average match</th></tr></thead>
+    <tbody>
+      {% for row in agent_stats %}
+      <tr><td>{{ row.agent_name }}</td><td>{{ row.total_queries }}</td><td>{{ '%.1f'|format(row.average_score or 0) }}%</td></tr>
+      {% else %}
+      <tr><td colspan="3">No agent queries have been recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+<section class="card">
+  <h2>Feedback by agent</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Agent</th><th>Feedback count</th><th>Average rating</th></tr></thead>
+    <tbody>
+      {% for row in feedback_stats %}
+      <tr><td>{{ row.agent_name }}</td><td>{{ row.feedback_count }}</td><td>{{ '%.1f'|format(row.average_rating or 0) }} / 5</td></tr>
+      {% else %}
+      <tr><td colspan="3">No feedback has been recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

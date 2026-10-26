@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | VinnEdu AI</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f8f6;
+            color: #153b35;
+        }
+        nav {
+            background: #0b332b;
+            color: white;
+            padding: 20px 3%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav a { color: white; text-decoration: none; margin-left: 20px; }
+        .card {
+            max-width: 600px;
+            margin: 55px auto;
+            padding: 32px;
+            background: white;
+            border: 1px solid #e0ece8;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px #163d3510;
+        }
+        h1 { margin-top: 0; }
+        label { display: block; margin: 18px 0 7px; font-weight: bold; }
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbded7;
+            border-radius: 9px;
+            font-size: 16px;
+        }
+        button {
+            margin-top: 22px;
+            padding: 13px 20px;
+            border: 0;
+            border-radius: 9px;
+            background: #128267;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .message { color: #a12626; }
+        .bottom { margin-top: 25px; color: #60746f; }
+        .bottom a { color: #6540a3; }
+        @media(max-width: 650px) {
+            .card { margin: 25px 15px; padding: 23px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <strong>VinnEdu AI</strong>
+        <div>
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Sign up</a>
+        </div>
+    </nav>
+
+<main class="card">
+    <h1>Log in</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p class="message">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+        <label for="email">Email</label>
+        <input
+            id="email"
+            type="email"
+            name="email"
+            autocomplete="email"
+            required
+        >
+
+        <label for="password">Password</label>
+        <input
+            id="password"
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            required
+        >
+
+        <button type="submit">Log in</button>
+    </form>
+
+    <p class="bottom">
+        New here?
+        <a href="{{ url_for('signup') }}">Create an account</a>
+    </p>
+</main>
+
+</body>
+</html>

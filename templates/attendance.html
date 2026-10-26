@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Attendance · VinnEdu AI{% endblock %}
+{% block content %}
+<h1>Attendance</h1>
+{% if current_user.role|lower in ['teacher','faculty','admin'] %}
+<div class="card"><h2>Record attendance</h2>
+<form method="post"><div class="form-grid">
+<div><label>Student name</label><input name="student_name" required></div>
+<div><label>Course</label><select name="course" required>{% for c in courses %}<option value="{{ c.title }}">{{ c.code }} — {{ c.title }}</option>{% endfor %}</select></div>
+<div><label>Status</label><select name="status"><option>Present</option><option>Absent</option><option>Late</option></select></div>
+<div><label>Date</label><input type="date" name="attendance_date" value="{{ '' }}" placeholder="YYYY-MM-DD"></div>
+</div><p><button type="submit">Save attendance</button></p></form>
+</div>
+{% endif %}
+<div class="card"><h2>Attendance summary</h2><div class="table-wrap"><table>
+<thead><tr><th>Student</th><th>Course</th><th>Present</th><th>Late</th><th>Total classes</th><th>Attendance %</th></tr></thead>
+<tbody>{% for r in summary %}<tr><td>{{ r.student_name }}</td><td>{{ r.course }}</td><td>{{ r.present_count or 0 }}</td><td>{{ r.late_count or 0 }}</td><td>{{ r.total_count }}</td><td>{{ r.attendance_pct or 0 }}%</td></tr>{% else %}<tr><td colspan="6">No records yet.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+<div class="card"><h2>Recent records</h2><div class="table-wrap"><table>
+<thead><tr><th>Date</th><th>Student</th><th>Course</th><th>Status</th></tr></thead>
+<tbody>{% for r in records %}<tr><td>{{ r.attendance_date }}</td><td>{{ r.student_name }}</td><td>{{ r.course }}</td><td>{{ r.status }}</td></tr>{% else %}<tr><td colspan="4">No records yet.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}
